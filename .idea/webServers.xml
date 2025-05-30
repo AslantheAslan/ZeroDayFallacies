@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="c08d4993-4e8a-437b-b901-54fcd9b35097" name="ismail@gpu03.cit.tu-berlin.de:22">
+        <fileTransfer rootFolder="/home/ismail" accessType="SFTP" host="gpu03.cit.tu-berlin.de" port="22" sshConfigId="570770d2-0e41-4c58-aeca-2d885d10f11f" sshConfig="ismail@gpu03.cit.tu-berlin.de:22 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
