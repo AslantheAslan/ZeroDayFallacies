@@ -1,13 +1,124 @@
-.idea
+# ============================================================
+# Root-level whitelist
+# Ignore every root-level file and folder by default.
+# Allowed paths are added below with !
+# ============================================================
+
+/*
+
+# Repository configuration
+!/.gitignore
+!/.gitattributes
+
+# README — include both possible capitalizations
+!/README.md
+!/readme.md
+
+# Selected root-level Python scripts
+!/main.py
+!/config.py
+!/kumo_cidds_rfm_loo.py
+!/kumo_cidds_rfm_loo_noise.py
+!/kumo_rfm_loo_multi_dataset.py
+!/kumo_rfm_loo_multi_dataset_noise.py
+!/results.py
+!/results_all.py
+!/results_all_kumo.py
+!/plot_far_dr.py
+!/csv2latex.py
+!/csv2latex_OOD.py
+
+# Selected root-level directories
+!/artifacts/
+!/data/
+!/figures/
+!/results/
+!/test/
+!/training/
+!/utils/
+
+
+# ============================================================
+# Placeholder-only directories
+# Keep the directory through .gitkeep, but ignore its contents.
+# ============================================================
+
+/artifacts/*
+!/artifacts/.gitkeep
+
+/figures/*
+!/figures/.gitkeep
+
+/results/*
+!/results/.gitkeep
+
+
+# ============================================================
+# Data directory
+#
+# Keep:
+#   - Python scripts directly inside data/
+#   - .gitkeep files inside data subdirectories
+#
+# Ignore:
+#   - datasets and other files inside data subdirectories
+#   - non-Python files directly inside data/
+# ============================================================
+
+/data/**/*
+
+# Git must be allowed to traverse the subdirectories
+!/data/**/
+
+# Keep placeholders at any depth
+!/data/**/.gitkeep
+
+# Keep Python scripts directly inside data/
+!/data/*.py
+
+# Add these if applicable:
+# !/data/*.sh
+# !/data/*.R
+
+
+# ============================================================
+# Python-generated files
+# These rules apply inside test/, training/, utils/, etc.
+# ============================================================
 
 __pycache__/
 *.py[cod]
-*.egg-info/
-.env
+*$py.class
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+
+# ============================================================
+# Virtual environments and local configuration
+# ============================================================
+
+.venv/
 venv/
-*.log
+env/
+ENV/
 
-# All data files except python scripts
+.env
+.env.*
+!.env.example
 
-data/*
-!data/*.py
+
+# ============================================================
+# PyCharm and operating-system files
+# ============================================================
+
+.idea/
+*.iml
+
+.DS_Store
+Thumbs.db
+desktop.ini

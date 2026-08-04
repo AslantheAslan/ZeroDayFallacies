@@ -2,8 +2,12 @@ import os
 import json
 from datetime import datetime
 
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, average_precision_score, \
+    precision_recall_curve, roc_curve
+import matplotlib.pyplot as plt
+
 import numpy as np
+import torch
 
 from collections import defaultdict
 
@@ -139,7 +143,7 @@ def test_report(y_true, y_pred, all_results, results_log, labels, new_order_labe
 
         final_report = classification_report(y_true,
                                              y_pred,
-                                             labels=[0, 1, 2, 3, 4],
+                                             labels=list(range(len(new_order_labels))),
                                              target_names=new_order_labels,
                                              digits=4,
                                              zero_division=0,
@@ -204,4 +208,61 @@ def test_report(y_true, y_pred, all_results, results_log, labels, new_order_labe
 
         # run.finish()
         all_results["runs"].append(results_log)
+        print("============ Test Results on Closed Set ============")
+        print(results_log["test_results"])
     return all_results
+
+
+def plot_auroc(y_true_anomaly, scores_anomaly, auroc):
+    # --- Plotting the ROC Curve ---
+    # Calculate FPR and TPR for various thresholds
+    fpr, tpr, thresholds = roc_curve(y_true_anomaly, scores_anomaly)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {auroc:.4f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Chance (AUC = 0.5)')  # No-skill classifier
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate (FPR)')
+    plt.ylabel('True Positive Rate (TPR)')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.grid(True)
+    plt.savefig('figures/auroc_bruteforce.png', dpi=300)
+    plt.close()
+
+
+def calc_auroc(analysis_data, target_tpr=0.99):
+    # Map val < 0 to 0 and val > 1 to 1
+    analysis_data['anomaly_score'] = analysis_data['anomaly_score'].clip(0, 1)
+
+    y_true = analysis_data['true_label']
+    scores_anomaly = analysis_data['anomaly_score']
+
+    if torch.is_tensor(y_true):
+        y_true_anomaly = (y_true != 0).long().cpu().numpy()
+    else:
+        y_true_anomaly = (y_true != 0).astype(int)
+
+    auroc = roc_auc_score(y_true_anomaly, scores_anomaly)
+    auprc = average_precision_score(y_true_anomaly, scores_anomaly)
+    print(f"AUROC: {auroc:.4f}, AUPRC: {auprc:.4f}")
+
+    plot_auroc(y_true_anomaly, scores_anomaly, auroc)
+
+    # Find threshold for 99% TPR
+    prec, rec, thresh = precision_recall_curve(y_true_anomaly, scores_anomaly)
+
+    idx = (rec >= target_tpr).nonzero()[0][0]  # first index where TPR >= 95%
+    threshold = thresh[idx]
+    print(f"Threshold for {target_tpr} TPR: {threshold:.4f}")
+
+    if torch.is_tensor(scores_anomaly):
+        y_pred_anomaly = (scores_anomaly >= threshold).long().cpu().numpy()
+    else:
+        y_pred_anomaly = (scores_anomaly >= threshold).astype(int)
+
+    results = classification_report(y_true_anomaly, y_pred_anomaly, target_names=["benign", "attack"])
+    print(results)
+
+    return auroc, auprc, threshold
